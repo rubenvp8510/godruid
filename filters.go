@@ -8,6 +8,26 @@ type Filter struct {
 	Function  string      `json:"function,omitempty"`
 	Field     *Filter     `json:"field,omitempty"`
 	Fields    []*Filter   `json:"fields,omitempty"`
+	Lower     string      `json:"lower,omitempty"`
+	Upper     string      `json:"upper,omitempty"`
+}
+
+func FilterBound(dimension string, bonds ...string) *Filter {
+	var lower string
+	var upper string
+
+	if len(bonds) >= 1 && len(bonds) <= 2 {
+		lower = bonds[0]
+		if len(bonds) > 1 {
+			upper = bonds[1]
+		}
+	}
+	return &Filter{
+		Type:      "bound",
+		Dimension: dimension,
+		Lower:     lower,
+		Upper:     upper,
+	}
 }
 
 func FilterSelector(dimension string, value interface{}) *Filter {
