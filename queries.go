@@ -252,19 +252,19 @@ type QuerySelect struct {
 // the interesting results are in events blob which we
 // call as 'SelectEvent'.
 type SelectBlob struct {
-        Timestamp string       `json:"timestamp"`
-        Result    SelectResult `json:"result"`
+	Timestamp string       `json:"timestamp"`
+	Result    SelectResult `json:"result"`
 }
 
 type SelectResult struct {
-        PagingIdentifiers map[string]interface{} `json:"pagingIdentifiers"`
-        Events            []SelectEvent          `json:"events"`
+	PagingIdentifiers map[string]interface{} `json:"pagingIdentifiers"`
+	Events            []SelectEvent          `json:"events"`
 }
 
 type SelectEvent struct {
-        SegmentId string                 `json:"segmentId"`
-        Offset    int64                  `json:"offset"`
-        Event     map[string]interface{} `json:"event"`
+	SegmentId string                 `json:"segmentId"`
+	Offset    int64                  `json:"offset"`
+	Event     map[string]interface{} `json:"event"`
 }
 
 func (q *QuerySelect) setup() { q.QueryType = "select" }
@@ -276,6 +276,45 @@ func (q *QuerySelect) onResponse(content []byte) error {
 	}
 	if len(*res) > 0 {
 		q.QueryResult = (*res)[0]
+	}
+	return nil
+}
+
+// ---------------------------------
+// Scan Query
+// ---------------------------------
+
+
+
+type ScanSegment struct {
+	SegmentId string  `json:"segmentId"`
+	Columns []string  `json:"columns"`
+	Events []map[string]interface{} `json:"events"`
+}
+
+type QueryScan struct {
+	QueryType  string                 `json:"queryType"`
+	DataSource string                 `json:"dataSource"`
+	Intervals  []string               `json:"intervals"`
+	Filter     *Filter                `json:"filter,omitempty"`
+	Columns    []string               `json:"columns,omitempty"`
+	BatchSize  int                    `json:"batchSize,omitempty"`
+	Limit      int                    `json:"limit,omitempty"`
+	Order      string                 `json:"order,omitempty"`
+	Context    map[string]interface{} `json:"context,omitempty"`
+
+	QueryResult []ScanSegment `json:"-"`
+}
+
+func (q *QueryScan) setup() { q.QueryType = "scan" }
+func (q *QueryScan) onResponse(content []byte) error {
+	res := new([]ScanSegment)
+	err := json.Unmarshal(content, res)
+	if err != nil {
+		return err
+	}
+	if len(*res) > 0 {
+		q.QueryResult = *res
 	}
 	return nil
 }
